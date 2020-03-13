@@ -1,36 +1,36 @@
 /**
   Endpoints related to feeds (ordered sets of tweets)
 */
-const router = require('express').Router();
-const { delay } = require('./helpers');
+const router = require("express").Router();
+const { delay } = require("./helpers");
 
 const NUM_OF_ROWS = 8;
 const SEATS_PER_ROW = 12;
 
 let state;
 
-router.get('/api/seat-availability', (req, res) => {
+router.get("/api/seat-availability", (req, res) => {
   if (!state) {
     state = {
-      bookedSeats: randomlyBookSeats(30),
+      bookedSeats: randomlyBookSeats(30)
     };
   }
 
   return res.json({
     bookedSeats: state.bookedSeats,
     numOfRows: NUM_OF_ROWS,
-    seatsPerRow: SEATS_PER_ROW,
+    seatsPerRow: SEATS_PER_ROW
   });
 });
 
 let lastBookingAttemptSucceeded = false;
 
-router.post('/api/book-seat', async (req, res) => {
+router.post("/api/book-seat", async (req, res) => {
   const { seatId, creditCard, expiration } = req.body;
 
   if (!state) {
     state = {
-      bookedSeats: randomlyBookSeats(30),
+      bookedSeats: randomlyBookSeats(30)
     };
   }
 
@@ -40,13 +40,13 @@ router.post('/api/book-seat', async (req, res) => {
 
   if (!creditCard || !expiration) {
     return res.status(400).json({
-      message: 'Please provide credit card information!',
+      message: "Please provide credit card information!"
     });
   }
 
   if (isAlreadyBooked) {
     return res.status(400).json({
-      message: 'This seat has already been booked!',
+      message: "This seat has already been booked!"
     });
   }
 
@@ -54,7 +54,7 @@ router.post('/api/book-seat', async (req, res) => {
     lastBookingAttemptSucceeded = !lastBookingAttemptSucceeded;
 
     return res.status(500).json({
-      message: 'An unknown error has occurred. Please try your request again.',
+      message: "An unknown error has occurred. Please try your request again."
     });
   }
 
@@ -63,7 +63,7 @@ router.post('/api/book-seat', async (req, res) => {
   state.bookedSeats[seatId] = true;
 
   return res.json({
-    success: true,
+    success: true
   });
 });
 
