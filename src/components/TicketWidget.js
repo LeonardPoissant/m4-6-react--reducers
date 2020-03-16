@@ -1,17 +1,24 @@
-import React from 'react';
-import styled from 'styled-components';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import React from "react";
+import styled from "styled-components";
 
-import { getRowName, getSeatNum } from '../helpers';
-import { range } from '../utils';
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+import { SeatContext } from "./SeatContext";
+
+import { getRowName, getSeatNum } from "../helpers";
+import { range } from "../utils";
+import Seat from "./Seat";
 
 const TicketWidget = () => {
-  // TODO: use values from Context
-  const numOfRows = 6;
-  const seatsPerRow = 6;
+  const {
+    state: { numOfRows, seatsPerRow, seats, hasLoaded }
+  } = React.useContext(SeatContext);
 
-  // TODO: implement the loading spinner <CircularProgress />
-  // with the hasLoaded flag
+  console.log(seats);
+
+  if (!hasLoaded) {
+    return <CircularProgress />;
+  }
 
   return (
     <Wrapper>
@@ -23,10 +30,16 @@ const TicketWidget = () => {
             <RowLabel>Row {rowName}</RowLabel>
             {range(seatsPerRow).map(seatIndex => {
               const seatId = `${rowName}-${getSeatNum(seatIndex)}`;
+              const seat = seats[seatId];
 
               return (
-                <SeatWrapper key={seatId}>
-                  {/* TODO: Render the actual <Seat /> */}
+                <SeatWrapper key={seatIndex}>
+                  <Seat
+                    rowIndex={rowIndex}
+                    seatIndex={seatIndex}
+                    price={seat.price}
+                    status={seat.isBooked ? "unavailable" : "available"}
+                  />
                 </SeatWrapper>
               );
             })}
