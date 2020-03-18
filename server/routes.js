@@ -21,7 +21,9 @@ router.get("/api/seat-availability", (req, res) => {
 });
 let lastBookingAttemptSucceeded = false;
 router.post("/api/book-seat", async (req, res) => {
+  console.log("***********ENDPOINT REACHED");
   const { seatId, creditCard, expiration } = req.body;
+  console.log("*****BODY: ", req.body);
   if (!state) {
     state = {
       seats: getInitialSeatData()

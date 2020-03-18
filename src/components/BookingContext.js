@@ -37,7 +37,7 @@ function reducer(state, action) {
     case "purchase-ticket-failure": {
       return {
         ...state,
-        error: "failure",
+        error: "Please enter valid information",
         status: action.message
       };
     }
@@ -48,6 +48,13 @@ function reducer(state, action) {
         seatId: null,
         price: null,
         error: null
+      };
+    }
+
+    case "clear-snack-bar": {
+      return {
+        ...state,
+        status: "idle"
       };
     }
 
@@ -80,9 +87,9 @@ export const BookingProvider = ({ children }) => {
       type: "purchase-ticket-request"
     });
   };
-  const purchaseTicketFailure = data => {
+  const purchaseTicketFailure = message => {
     dispatch({
-      ...data,
+      ...message,
       type: "purchase-ticket-failure"
     });
   };
@@ -91,6 +98,13 @@ export const BookingProvider = ({ children }) => {
     dispatch({
       ...data,
       type: "purchase-ticket-success"
+    });
+  };
+
+  const clearSnackBar = data => {
+    dispatch({
+      ...data,
+      type: "clear-snack-bar"
     });
   };
 
@@ -104,7 +118,8 @@ export const BookingProvider = ({ children }) => {
             cancelBookingProcess,
             purchaseTicketRequest,
             purchaseTicketFailure,
-            purchaseTicketSuccess
+            purchaseTicketSuccess,
+            clearSnackBar
           }
         }}
       >

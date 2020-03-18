@@ -10,13 +10,14 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import { decodeSeatId } from "../helpers";
 
 import { BookingContext } from "./BookingContext";
 
 const PurchaseModal = () => {
   const {
-    state: { status, seatId, price, message },
+    state: { status, seatId, price, message, error },
     actions: {
       cancelBookingProcess,
       purchaseTicketRequest,
@@ -29,6 +30,40 @@ const PurchaseModal = () => {
   const [expiration, setExpiration] = React.useState("");
 
   const { seatNum, rowName } = decodeSeatId(seatId);
+  const chosenOnSubmit = ev => {
+    ev.preventDefault();
+
+    purchaseTicketRequest();
+    console.log("Fetch ACTIVATED");
+    fetch("/api/book-seat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        creditCard,
+        expiration,
+        seatId
+      })
+    })
+      .then(res => {
+        console.log("RES HERE: ", res);
+        return res.json();
+      })
+      .then(data => {
+        if (data.success) {
+          console.log("SUCCESS");
+          purchaseTicketSuccess();
+        } else {
+          console.log("FAILURE");
+          purchaseTicketFailure(data.message);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        purchaseTicketFailure("ASDSKJDSKJD");
+      });
+  };
 
   return (
     <Dialog open={seatId !== null} onClose={cancelBookingProcess}>
@@ -52,39 +87,7 @@ const PurchaseModal = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <form
-        onSubmit={ev => {
-          ev.preventDefault();
-
-          purchaseTicketRequest();
-
-          fetch("/api/book-seat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              creditCard,
-              expiration,
-              seatId
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success) {
-                  console.log("SUCCESS");
-                  purchaseTicketSuccess();
-                } else {
-                  console.log("FAILURE");
-                  purchaseTicketFailure(data.message);
-                }
-              })
-              .catch(err => {
-                console.log(err);
-                purchaseTicketFailure("ASDSKJDSKJD");
-              })
-          });
-        }}
-      >
+      <form onSubmit={chosenOnSubmit}>
         <h2>Enter CC Information</h2>
         <TextField
           placeholder="Credit-Card-Number"
@@ -96,7 +99,11 @@ const PurchaseModal = () => {
           value={expiration}
           onChange={ev => setExpiration(ev.currentTarget.value)}
         ></TextField>
-        <Button>Confirm</Button>
+        <Button type="submit">
+          {status === "awaiting-response" ? <CircularProgress /> : "Purchased"}
+          Confirm
+        </Button>
+        {error && <div>{error}</div>}
       </form>
     </Dialog>
   );
