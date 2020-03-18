@@ -16,7 +16,7 @@ function App() {
   } = React.useContext(SeatContext);
 
   const {
-    status,
+    state: { status },
     actions: { clearSnackBar }
   } = React.useContext(BookingContext);
 

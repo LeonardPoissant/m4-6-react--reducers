@@ -13,6 +13,8 @@ import Button from "@material-ui/core/Button";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { decodeSeatId } from "../helpers";
 
+import { SeatContext } from "./SeatContext";
+
 import { BookingContext } from "./BookingContext";
 
 const PurchaseModal = () => {
@@ -25,6 +27,11 @@ const PurchaseModal = () => {
       purchaseTicketSuccess
     }
   } = React.useContext(BookingContext);
+  const {
+    state: {},
+    actions: { markSeatasPurchased }
+  } = React.useContext(SeatContext);
+
   console.log("SEATID", seatId, status);
   const [creditCard, setCreditCard] = React.useState("");
   const [expiration, setExpiration] = React.useState("");
@@ -52,8 +59,9 @@ const PurchaseModal = () => {
       })
       .then(data => {
         if (data.success) {
-          console.log("SUCCESS");
-          purchaseTicketSuccess();
+          console.log("DATA FROM FETCH", data);
+          purchaseTicketSuccess(data);
+          markSeatasPurchased(data);
         } else {
           console.log("FAILURE");
           purchaseTicketFailure(data.message);

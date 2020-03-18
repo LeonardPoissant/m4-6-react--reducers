@@ -42,6 +42,7 @@ function reducer(state, action) {
       };
     }
     case "purchase-ticket-success": {
+      console.log("purchase-ticket-success", state);
       return {
         ...state,
         status: "purchased",
@@ -95,6 +96,7 @@ export const BookingProvider = ({ children }) => {
   };
 
   const purchaseTicketSuccess = data => {
+    console.log("DATA:", data);
     dispatch({
       ...data,
       type: "purchase-ticket-success"

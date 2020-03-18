@@ -23,6 +23,13 @@ function reducer(state, action) {
       };
     }
 
+    case "mark-seat-as-purchased": {
+      console.log("mark-seat-as-purchased", state);
+      return {
+        ...state
+      };
+    }
+
     default:
       throw new Error(`This is an error:${action.type}`);
   }
@@ -37,11 +44,19 @@ export const SeatProvider = ({ children }) => {
     });
   };
 
+  const markSeatasPurchased = data => {
+    console.log("markSeatasPurchased", data);
+    dispatch({
+      ...data,
+      type: "mark-seat-as-purchased"
+    });
+  };
+
   return (
     <SeatContext.Provider
       value={{
         state,
-        actions: { receiveSeatInfoFromServer }
+        actions: { receiveSeatInfoFromServer, markSeatasPurchased }
       }}
     >
       {children}
