@@ -3,6 +3,7 @@ import styled from "styled-components";
 
 import { SeatContext } from "./SeatContext";
 import { BookingContext } from "./BookingContext";
+import PurchaseModal from "./PurchaseModal";
 import TicketWidget from "./TicketWidget";
 
 import GlobalStyles from "./GlobalStyles";
@@ -28,6 +29,7 @@ function App() {
       <div>
         <TicketWidget />
       </div>
+      <PurchaseModal />
     </>
   );
 }

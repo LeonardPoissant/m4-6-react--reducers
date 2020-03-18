@@ -5,7 +5,7 @@ export const BookingContext = React.createContext();
 const initialState = {
   status: "idle",
   error: null,
-  selectedSeatId: null,
+  seatId: null,
   price: null
 };
 
@@ -13,22 +13,84 @@ function reducer(state, action) {
   switch (action.type) {
     case "begin-booking-process": {
       return {
+        ...state,
         status: "select-seat",
-        selectedSeatId: action.selectedSeatId,
+        seatId: action.seatId,
         price: action.price
       };
     }
+    case "cancel-booking-process": {
+      return {
+        ...state,
+        status: "idle",
+        seatId: null,
+        price: null
+      };
+    }
+    case "purchase-ticket-request": {
+      return {
+        ...state,
+        error: null,
+        status: "await-response"
+      };
+    }
+    case "purchase-ticket-failure": {
+      return {
+        ...state,
+        error: "failure",
+        status: action.message
+      };
+    }
+    case "purchase-ticket-success": {
+      return {
+        ...state,
+        status: "purchased",
+        seatId: null,
+        price: null,
+        error: null
+      };
+    }
+
+    default:
+      throw new Error(`Error: ${action.type}`);
   }
 }
 
 export const BookingProvider = ({ children }) => {
   const [state, dispatch] = React.useReducer(reducer, initialState);
 
-  const beginBookingProcess = ({ selectedSeatId, price }) => {
+  const beginBookingProcess = data => {
+    //console.log(`${rowName}-${seatIndex} ${price}`);
     dispatch({
-      type: "begin-booking-process",
-      selectedSeatId,
-      price
+      ...data,
+      type: "begin-booking-process"
+    });
+  };
+
+  const cancelBookingProcess = data => {
+    dispatch({
+      ...data,
+      type: "cancel-booking-process"
+    });
+  };
+
+  const purchaseTicketRequest = data => {
+    dispatch({
+      ...data,
+      type: "purchase-ticket-request"
+    });
+  };
+  const purchaseTicketFailure = data => {
+    dispatch({
+      ...data,
+      type: "purchase-ticket-failure"
+    });
+  };
+
+  const purchaseTicketSuccess = data => {
+    dispatch({
+      ...data,
+      type: "purchase-ticket-success"
     });
   };
 
@@ -37,7 +99,13 @@ export const BookingProvider = ({ children }) => {
       <BookingContext.Provider
         value={{
           state,
-          actions: { beginBookingProcess }
+          actions: {
+            beginBookingProcess,
+            cancelBookingProcess,
+            purchaseTicketRequest,
+            purchaseTicketFailure,
+            purchaseTicketSuccess
+          }
         }}
       >
         {children}

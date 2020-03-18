@@ -25,7 +25,7 @@ const Seat = ({ rowIndex, seatIndex, price, status }) => {
         <SeatWrapper
           key={seatId}
           disabled={status === "unavailable"}
-          onClick={() => beginBookingProcess(seatId, price)}
+          onClick={() => beginBookingProcess({ seatId, price })}
         >
           <img src={SeatImgSrc} />
         </SeatWrapper>

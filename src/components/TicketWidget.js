@@ -5,7 +5,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { SeatContext } from "./SeatContext";
 
-import { getRowName, getSeatNum } from "../helpers";
+import { getRowName, getSeatNum, encodeSeatId } from "../helpers";
 import { range } from "../utils";
 import Seat from "./Seat";
 
@@ -14,12 +14,9 @@ const TicketWidget = () => {
     state: { numOfRows, seatsPerRow, seats, hasLoaded }
   } = React.useContext(SeatContext);
 
-  console.log(seats);
-
   if (!hasLoaded) {
     return <CircularProgress />;
   }
-
   return (
     <Wrapper>
       {range(numOfRows).map(rowIndex => {
