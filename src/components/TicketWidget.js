@@ -1,22 +1,23 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
-
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import { SeatContext } from "./SeatContext";
 
 import { getRowName, getSeatNum, encodeSeatId } from "../helpers";
 import { range } from "../utils";
+
 import Seat from "./Seat";
 
 const TicketWidget = () => {
   const {
-    state: { numOfRows, seatsPerRow, seats, hasLoaded }
-  } = React.useContext(SeatContext);
+    state: { hasLoaded, seats, seatsPerRow, numOfRows }
+  } = useContext(SeatContext);
 
   if (!hasLoaded) {
     return <CircularProgress />;
   }
+
   return (
     <Wrapper>
       {range(numOfRows).map(rowIndex => {
@@ -27,16 +28,18 @@ const TicketWidget = () => {
             <RowLabel>Row {rowName}</RowLabel>
             {range(seatsPerRow).map(seatIndex => {
               const seatId = `${rowName}-${getSeatNum(seatIndex)}`;
+
               const seat = seats[seatId];
 
               return (
-                <SeatWrapper key={seatIndex}>
+                <SeatWrapper key={seatId}>
                   <Seat
+                    seatId={seatId}
                     rowIndex={rowIndex}
                     seatIndex={seatIndex}
                     price={seat.price}
                     status={seat.isBooked ? "unavailable" : "available"}
-                  />
+                  ></Seat>
                 </SeatWrapper>
               );
             })}
@@ -57,7 +60,6 @@ const Wrapper = styled.div`
 const Row = styled.div`
   display: flex;
   position: relative;
-
   &:not(:last-of-type) {
     border-bottom: 1px solid #ddd;
   }

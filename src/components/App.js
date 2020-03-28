@@ -1,45 +1,43 @@
-import React from "react";
-import styled from "styled-components";
+import React, { useContext, useEffect } from "react";
+
+import GlobalStyles from "./GlobalStyles";
+import TicketWidget from "./TicketWidget";
+import { SeatContext } from "./SeatContext";
+import { BookingContext } from "./BookingContext";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
 
-import { SeatContext } from "./SeatContext";
-import { BookingContext } from "./BookingContext";
 import PurchaseModal from "./PurchaseModal";
-import TicketWidget from "./TicketWidget";
 
-import GlobalStyles from "./GlobalStyles";
-
-function App() {
+const App = () => {
   const {
     actions: { receiveSeatInfoFromServer }
-  } = React.useContext(SeatContext);
-
+  } = useContext(SeatContext);
   const {
     state: { status },
     actions: { clearSnackBar }
-  } = React.useContext(BookingContext);
+  } = useContext(BookingContext);
 
-  React.useEffect(() => {
-    fetch("/api/seat-availability")
+  useEffect(() => {
+    fetch("api/seat-availability")
       .then(res => res.json())
       .then(data => receiveSeatInfoFromServer(data));
   }, []);
-
   return (
     <>
       <GlobalStyles />
-      <div>
-        <TicketWidget />
-      </div>
+      <TicketWidget />
       <PurchaseModal />
-      <Snackbar open={status === "purchased"} severity="success">
-        <MuiAlert onClose={clearSnackBar} severity="success">
-          Congratulations!
-        </MuiAlert>
+
+      <Snackbar
+        open={status === "success"}
+        autoHideDuration={6000}
+        onClose={clearSnackBar}
+      >
+        <MuiAlert>Enjoy the Show!</MuiAlert>
       </Snackbar>
     </>
   );
-}
+};
 
 export default App;

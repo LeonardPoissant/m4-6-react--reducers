@@ -1,77 +1,76 @@
-import React from "react";
+import React, { useReducer, createContext } from "react";
 
-export const BookingContext = React.createContext();
+export const BookingContext = createContext();
 
 const initialState = {
   status: "idle",
   error: null,
-  seatId: null,
+  selectedSeatId: null,
   price: null
 };
 
 function reducer(state, action) {
   switch (action.type) {
-    case "begin-booking-process": {
+    case "begin-booking-process":
       return {
         ...state,
-        status: "select-seat",
-        seatId: action.seatId,
+        status: "seat-selected",
+        error: null,
+        selectedSeatId: action.seatId,
         price: action.price
       };
-    }
-    case "cancel-booking-process": {
+
+    case "cancel-booking-process":
       return {
         ...state,
         status: "idle",
-        seatId: null,
+        selectedSeatId: null,
         price: null
       };
-    }
-    case "purchase-ticket-request": {
+
+    case "purchase-ticket-request":
       return {
         ...state,
-        error: null,
-        status: "await-response"
-      };
-    }
-    case "purchase-ticket-failure": {
-      return {
-        ...state,
-        error: "Please enter valid information",
-        status: action.message
-      };
-    }
-    case "purchase-ticket-success": {
-      console.log("purchase-ticket-success", state);
-      return {
-        ...state,
-        status: "purchased",
-        seatId: null,
-        price: null,
+        status: "await-response",
         error: null
       };
-    }
 
-    case "clear-snack-bar": {
+    case "purchase-ticket-failure":
+      return {
+        ...state,
+        status: "error",
+        error: action.message
+      };
+
+    case "purchase-ticket-success":
+      return {
+        ...state,
+        status: "success",
+        price: null,
+        selectedSeatId: null,
+        error: null
+      };
+
+    case "clear-snack-bar":
       return {
         ...state,
         status: "idle"
       };
-    }
 
     default:
-      throw new Error(`Error: ${action.type}`);
+      throw new Error(`"error", ${action.type}`);
   }
 }
 
-export const BookingProvider = ({ children }) => {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
+export const BookingMechanism = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
-  const beginBookingProcess = data => {
-    //console.log(`${rowName}-${seatIndex} ${price}`);
+  const beginBookingProcess = ({ seatId, price }) => {
+    console.log("BOOKINGCONTEXT", state);
     dispatch({
-      ...data,
-      type: "begin-booking-process"
+      type: "begin-booking-process",
+      seatId,
+      price
     });
   };
 
@@ -88,21 +87,18 @@ export const BookingProvider = ({ children }) => {
       type: "purchase-ticket-request"
     });
   };
-  const purchaseTicketFailure = message => {
-    dispatch({
-      ...message,
-      type: "purchase-ticket-failure"
-    });
-  };
-
   const purchaseTicketSuccess = data => {
-    console.log("DATA:", data);
     dispatch({
       ...data,
       type: "purchase-ticket-success"
     });
   };
-
+  const purchaseTicketFailure = message => {
+    dispatch({
+      type: "purchase-ticket-failure",
+      message
+    });
+  };
   const clearSnackBar = data => {
     dispatch({
       ...data,
@@ -111,23 +107,22 @@ export const BookingProvider = ({ children }) => {
   };
 
   return (
-    <>
-      <BookingContext.Provider
-        value={{
-          state,
-          actions: {
-            beginBookingProcess,
-            cancelBookingProcess,
-            purchaseTicketRequest,
-            purchaseTicketFailure,
-            purchaseTicketSuccess,
-            clearSnackBar
-          }
-        }}
-      >
-        {children}
-      </BookingContext.Provider>
-      ;
-    </>
+    <BookingContext.Provider
+      value={{
+        state,
+        actions: {
+          beginBookingProcess,
+          cancelBookingProcess,
+          purchaseTicketRequest,
+          purchaseTicketSuccess,
+          purchaseTicketFailure,
+          clearSnackBar
+        }
+      }}
+    >
+      {children}
+    </BookingContext.Provider>
   );
 };
+
+export default BookingMechanism;
