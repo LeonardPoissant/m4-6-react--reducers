@@ -1,27 +1,27 @@
-import React from 'react';
-import styled from 'styled-components';
-import Snackbar from '@material-ui/core/Snackbar';
-import Alert from '@material-ui/lab/Alert';
+import React from "react";
+import styled from "styled-components";
+import Snackbar from "@material-ui/core/Snackbar";
+import Alert from "@material-ui/lab/Alert";
 
-import GlobalStyles from './GlobalStyles';
-import TicketWidget from './TicketWidget';
-import PurchaseModal from './PurchaseModal';
-import { SeatContext } from './SeatContext';
-import { BookingContext } from './BookingContext';
+import GlobalStyles from "./GlobalStyles";
+import TicketWidget from "./TicketWidget";
+import PurchaseModal from "./PurchaseModal";
+import { SeatContext } from "./SeatContext";
+import { BookingContext } from "./BookingContext";
 
-import 'tippy.js/dist/tippy.css';
+import "tippy.js/dist/tippy.css";
 
 function App() {
   const {
-    actions: { receiveSeatInfoFromServer },
+    actions: { receiveSeatInfoFromServer }
   } = React.useContext(SeatContext);
   const {
     actions: { clearSnackbar },
-    status,
+    status
   } = React.useContext(BookingContext);
 
   React.useEffect(() => {
-    fetch('/api/seat-availability')
+    fetch("/api/seat-availability")
       .then(res => res.json())
       .then(receiveSeatInfoFromServer);
   }, [receiveSeatInfoFromServer]);
@@ -35,7 +35,11 @@ function App() {
       </Centered>
 
       <PurchaseModal />
-      <Snackbar open={status === 'purchased'} severity="success">
+      <Snackbar
+        open={status === "purchased"}
+        severity="success"
+        autoHideDuration={6000}
+      >
         <Alert
           severity="success"
           onClose={clearSnackbar}

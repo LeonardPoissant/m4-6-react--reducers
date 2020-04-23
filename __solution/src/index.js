@@ -1,17 +1,14 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from "react";
+import ReactDOM from "react-dom";
 
-import App from './components/App';
-import { SeatProvider } from './components/SeatContext';
-import { BookingProvider } from './components/BookingContext';
+import App from "./components/App";
+import { SeatProvider } from "./components/SeatContext";
+import { BookingProvider } from "./components/BookingContext";
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 
 ReactDOM.render(
-  <BookingProvider>
-    <SeatProvider>
-      <App />
-    </SeatProvider>
-  </BookingProvider>,
+  <App />,
+
   rootElement
 );

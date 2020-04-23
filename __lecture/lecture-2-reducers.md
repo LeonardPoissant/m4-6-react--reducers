@@ -10,7 +10,7 @@ No restrictions. It's the wild west.
 const App = () => {
   const [count, setCount] = React.useState(0);
 
-  setCount('Hello'); // Whyyyyy makes no sense
+  setCount("Hello"); // Whyyyyy makes no sense
 };
 ```
 
@@ -74,14 +74,14 @@ A reducer is a function that takes _the current state_ and _an action_ and produ
 // There is no other way to change the state.
 function reducer(state, action) {
   switch (action.type) {
-    case 'INCREMENT':
+    case "INCREMENT":
       return state + 1;
-    case 'DECREMENT':
+    case "DECREMENT":
       return state - 1;
-    case 'RESET':
+    case "RESET":
       return 0;
     default:
-      throw new Error('Unrecognized action');
+      throw new Error(`Unrecognized action: ${action.type}`);
   }
 }
 
@@ -100,8 +100,8 @@ const App = () => {
 const Game = ({ count, dispatch }) => {
   return (
     <>
-      <button onClick={() => dispatch({ type: 'INCREMENT' })}>Increment</button>
-      <button onClick={() => dispatch({ type: 'INCREMENT' })}>Decrement</button>
+      <button onClick={() => dispatch({ type: "INCREMENT" })}>Increment</button>
+      <button onClick={() => dispatch({ type: "DECREMENT" })}>Decrement</button>
     </>
   );
 };
@@ -109,7 +109,7 @@ const Game = ({ count, dispatch }) => {
 const Reset = ({ dispatch }) => {
   return (
     <>
-      <button onClick={() => dispatch({ type: 'RESET' })}>Reset</button>
+      <button onClick={() => dispatch({ type: "RESET" })}>Reset</button>
     </>
   );
 };
@@ -175,7 +175,9 @@ If not, what could be improved?
 ---
 
 ```js
-{ type: 'click-to-open-modal', state: { newModal: 'login' } }
+BAD { type: 'click-to-open-modal', state: { newModal: 'login' } }
+
+GOOD { type: 'click-login-link', state: { newModal: 'login' } }
 ```
 
 ---
@@ -187,15 +189,21 @@ If not, what could be improved?
 ---
 
 ```js
-{ type: 'set-player-coordinates', x: 41, y: 22 }
+BAD { type: 'set-player-coordinates', x: 41, y: 22 }
+
+GOOD { type: 'move-player', x: 41, y: 22 }
+
 ```
 
 ---
 
 ```js
-{
+BAD NO TYPE{
   event: 'logout';
 }
+
+GOOD { type:'click-logout'event: 'logout'}
+GOOD { type:'click-logout-link'event: 'logout'}
 ```
 
 ---
@@ -219,15 +227,15 @@ By convention, reducers often take this form:
 ```js
 function reducer(state, action) {
   switch (action.type) {
-    case 'some-action': {
+    case "some-action": {
       // return some new state
     }
-    case 'some-other-action': {
+    case "some-other-action": {
       // return some other new state
     }
     default: {
       // If no action matches, this must be a mistake
-      throw new Error('whoopsie');
+      throw new Error("whoopsie");
     }
   }
 }
@@ -245,12 +253,12 @@ Another example:
 
 ```js
 const reducer = (state, action) => {
-  if (action.type === 'some-action') {
-    return 'hieee';
-  } else if (action.type === 'some-other-action') {
-    return 'byeee';
+  if (action.type === "some-action") {
+    return "hieee";
+  } else if (action.type === "some-other-action") {
+    return "byeee";
   } else {
-    throw new Error('whoopsie');
+    throw new Error("whoopsie");
   }
 };
 ```
@@ -293,8 +301,28 @@ const LightSwitch = () => {
 
   return (
     <>
-      Light is {isOn ? 'on' : 'off'}.
+      Light is {isOn ? "on" : "off"}.
       <button onClick={() => setIsOn(!isOn)}>Toggle</button>
+    </>
+  );
+};
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "TOGGLE_LIGHT": {
+      return !state;
+    }
+
+    default:
+      throw new Error("Whoopsies");
+  }
+};
+const LightSwitch = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <>
+      Light is {state ? "on" : "off"}.
+      <button onClick={() => dispatch({ type: "TOGGLE_LIGHT" })}>Toggle</button>
     </>
   );
 };
@@ -304,23 +332,61 @@ const LightSwitch = () => {
 
 ```jsx
 function App() {
-  const [status, setStatus] = React.useState('idle');
+  const [status, setStatus] = React.useState("idle");
 
   return (
     <form
       onSubmit={() => {
-        setStatus('loading');
+        setStatus("loading");
 
         getStatusFromServer()
           .then(() => {
-            setStatus('idle');
+            setStatus("idle");
           })
           .catch(() => {
-            setStatus('error');
+            setStatus("error");
           });
       }}
     >
       Status is: {status}
+      <button>Submit</button>
+    </form>
+  );
+}
+const reducer = (action, state) => {
+  switch (action.type) {
+    case "REQUEST_DATA": {
+      return "loading";
+    }
+    case "RECEIVE_DATA": {
+      return "idle";
+    }
+    case "RECEIVE_ERROR": {
+      return "error";
+    }
+
+    default:
+      throw new Error(`Error: YOU MADE A MISTAKE`);
+  }
+};
+function App() {
+  const [state, dispatch] = useReducer(reducer, "idle");
+
+  return (
+    <form
+      onSubmit={() => {
+        dispatch("REQUEST_DATA");
+
+        getStatusFromServer()
+          .then(() => {
+            dispatch("RECEIVE_DATA");
+          })
+          .catch(() => {
+            dispatch({ type: "RECEIVE_ERROR" });
+          });
+      }}
+    >
+      Status is: {state}
       <button>Submit</button>
     </form>
   );
@@ -339,7 +405,40 @@ export const ModalProvider = ({ children }) => {
     <ModalContext.Provider
       value={{
         currentModal,
-        setCurrentModal,
+        setCurrentModal
+      }}
+    >
+      {children}
+    </ModalContext.Provider>
+  );
+};
+export const ModalContext = React.createContext(null);
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "OPEN_MODAL": {
+      return action.modal;
+    }
+
+    case "CLOSE_MODAL": {
+      return null;
+    }
+    default:
+      throw new Error(`Error: unrecognized action`);
+  }
+};
+
+export const ModalProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, null);
+
+const openModal = modal => dispatch({type: "OPEN_MODAL", modal })
+const closeModal = modal => dispatch({type: "CLOSE_MODAL" })
+  return (
+    <ModalContext.Provider
+      value={{
+        currentModal:state
+        openModal,
+        closeModal
       }}
     >
       {children}
@@ -358,7 +457,7 @@ It's important that you don't _mutate_ the existing state:
 // 🚨 don't do this:
 function reducer(state, action) {
   switch (action.type) {
-    case 'updateUserInfo': {
+    case "updateUserInfo": {
       state.firstName = action.firstName;
       state.lastName = action.lastName;
 
@@ -377,7 +476,7 @@ What does the following output to the console?
 ```js
 const obj = {
   numOfBeans: 2,
-  numOfButtons: 0,
+  numOfButtons: 0
 };
 
 function grantHalfBean(someObject) {
@@ -401,11 +500,11 @@ You must produce a **new value** from the reducer, so that React knows it has to
 ```jsx live=true
 const initialState = {
   numOfBeans: 2,
-  numOfButtons: 0,
+  numOfButtons: 0
 };
 
 function reducer(state, action) {
-  if (action.type === 'increment-beans') {
+  if (action.type === "increment-beans") {
     state.numOfBeans += 0.5;
   }
 
@@ -424,7 +523,7 @@ function App() {
       <button
         onClick={() =>
           dispatch({
-            type: 'increment-beans',
+            type: "increment-beans"
           })
         }
       >
@@ -446,15 +545,34 @@ Always return a new object.
 ```js
 const initialState = {
   numOfBeans: 2,
-  numOfButtons: 0,
+  numOfButtons: 0
 };
 
 function reducer(state, action) {
-  if (action.type === 'increment-beans') {
+  if (action.type === "increment-beans") {
     return {
       numOfButtons: state.numOfButtons,
-      numOfBeans: state.numOfBeans + 0.5,
+      numOfBeans: state.numOfBeans + 0.5
     };
+  }
+
+  return state;
+}
+////
+
+const initialState = {
+  numOfBeans: 2,
+  numOfButtons: 0
+};
+
+function reducer(state, action) {
+  if (action.type === "increment-beans") {
+    return {
+      ...state,
+      numOfBeans: state.numOfBeans + 0.5
+    };
+  } else {
+    //handle "default /error
   }
 
   return state;
@@ -470,14 +588,14 @@ const initialState = {
   numOfBeans: 2,
   numOfButtons: 0,
   numOfBananas: 10,
-  numOfBlasters: 8,
+  numOfBlasters: 8
 };
 
 function reducer(state, action) {
-  if (action.type === 'increment-beans') {
+  if (action.type === "increment-beans") {
     return {
       ...state,
-      numOfBeans: state.numOfBeans + 0.5,
+      numOfBeans: state.numOfBeans + 0.5
     };
   }
 
@@ -507,18 +625,58 @@ Update these objects to use `useReducer`, with a single immutable object
 ```jsx
 const Game = () => {
   const [points, setPoints] = React.useState(0);
-  const [status, setStatus] = React.useState('idle');
+  const [status, setStatus] = React.useState("idle");
 
   return (
     <>
       Your score: {points}.
-      {status === 'playing' && (
+      {status === "playing" && (
         <>
           <button onClick={() => setPoints(points + 1)}>🍓</button>
           <button onClick={() => setPoints(points - 1)}>💀</button>
         </>
       )}
-      <button onClick={() => setStatus('playing')}>Start game</button>
+      <button onClick={() => setStatus("playing")}>Start game</button>
+    </>
+  );
+};
+
+const initialState = { points: 0, status: "idle" };
+const reduce = (action, state) => {
+  switch (action.type) {
+    case "ADD_POINTS":
+      return {
+        ...state,
+        points: state.points + 1
+      };
+    case "DEDUCE_POINTS":
+      return {
+        ...state,
+        points: state.points - 1
+      };
+    case "START_GAME":
+      return {
+        ...state,
+        status: "playing"
+      };
+  }
+};
+const Game = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { points, status } = state;
+
+  return (
+    <>
+      Your score: {state.points}.
+      {status === "playing" && (
+        <>
+          <button onClick={() => dispatch({ type: "ADD_POINTS" })}>🍓</button>
+          <button onClick={() => dispatch({ type: "DEDUCE_POINTS" })}>
+            💀
+          </button>
+        </>
+      )}
+      <button onClick={() => dispatch({ type: "START_GAME" })}>Start game</button>
     </>
   );
 };
@@ -527,13 +685,13 @@ const Game = () => {
 ---
 
 ```jsx
-import sendDataToServer from './some-madeup-place';
-import FormField from './some-other-madeup-place';
+import sendDataToServer from "./some-madeup-place";
+import FormField from "./some-other-madeup-place";
 
 const SignUpForm = () => {
-  const [firstName, setFirstName] = React.useState('');
-  const [lastName, setLastName] = React.useState('');
-  const [email, setEmail] = React.useState('');
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
+  const [email, setEmail] = React.useState("");
 
   return (
     <form onSubmit={sendDataToServer}>
@@ -558,9 +716,50 @@ const SignUpForm = () => {
         onClick={ev => {
           ev.preventDefault();
 
-          setFirstName('');
-          setLastName('');
-          setEmail('');
+          setFirstName("");
+          setLastName("");
+          setEmail("");
+        }}
+      >
+        Reset
+      </button>
+    </form>
+  );
+};
+import sendDataToServer from "./some-madeup-place";
+import FormField from "./some-other-madeup-place";
+
+const SignUpForm = () => {
+  const [firstName, setFirstName] = React.useState("");
+  const [lastName, setLastName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+
+  return (
+    <form onSubmit={sendDataToServer}>
+      <FormField
+        label="First Name"
+        value={firstName}
+        onChange={ev => setFirstName(ev.target.value)}
+      />
+      <FormField
+        label="Last Name"
+        value={lastName}
+        onChange={ev => setLastName(ev.target.value)}
+      />
+      <FormField
+        label="Email"
+        value={email}
+        onChange={ev => setEmail(ev.target.value)}
+      />
+
+      <button>Submit</button>
+      <button
+        onClick={ev => {
+          ev.preventDefault();
+
+          setFirstName("");
+          setLastName("");
+          setEmail("");
         }}
       >
         Reset
@@ -595,23 +794,23 @@ export const UserContext = React.createContext();
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'login': {
+    case "login": {
       return action.user;
     }
 
-    case 'logout': {
+    case "logout": {
       return null;
     }
 
-    case 'change-email': {
+    case "change-email": {
       return {
         ...state,
-        email: action.email,
+        email: action.email
       };
     }
 
     default:
-      throw new Error('unrecognized action: ' + action.type);
+      throw new Error("unrecognized action: " + action.type);
   }
 }
 
@@ -641,7 +840,7 @@ export const StudentProvider = ({ children }) => {
   const [students, setStudents] = React.useState({
     aditya: false,
     bodhi: false,
-    chetan: false,
+    chetan: false
   });
 
   // We need actions to:
@@ -665,7 +864,7 @@ export const DataContext = React.createContext();
 export const DataProvider = ({ children }) => {
   const [status, setStatus] = React.useState({
     data: null,
-    status: 'idle',
+    status: "idle"
   });
 
   // We need actions to:
